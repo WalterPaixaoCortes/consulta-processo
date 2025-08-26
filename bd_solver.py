@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = "f0eb72285062bed1e6062553bf857d484b8cd831b64eeda4d7f339f8996adf74"
+API_KEY = "APIKEY"
 
 headers = {
     # Step 1: Get your API token here: https://brightdata.com/cp/setting/users
