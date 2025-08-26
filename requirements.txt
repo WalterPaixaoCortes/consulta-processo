@@ -1,0 +1,7 @@
+typer
+pydantic
+requests
+pandas
+playwright 
+python-dotenv
+webdriver-manager
