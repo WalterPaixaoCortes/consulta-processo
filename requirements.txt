@@ -4,4 +4,9 @@ requests
 pandas
 playwright 
 python-dotenv
+selenium
 webdriver-manager
+fastapi
+gunicorn
+uvicorn
+sqlalchemy
