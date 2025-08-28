@@ -1,3 +1,4 @@
+import json
 import sys
 import os
 
@@ -28,9 +29,7 @@ def set_iframe_attr(page, selector, attr, value=None, remove=False):
 def run(cnpj: str) -> bool:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=False)
-        context = browser.new_context(
-            extra_http_headers={"User-Agent": os.getenv("USERAGENT")},
-        )
+        context = browser.new_context()
         page = context.new_page()
         page.goto(os.getenv("URL"))
 
@@ -47,25 +46,43 @@ def run(cnpj: str) -> bool:
             result = solver.hcaptcha(
                 sitekey=os.getenv("SITEKEY"),
                 url=os.getenv("URLCAPTCHA"),
-                userAgent=os.getenv("USERAGENT"),
+                # userAgent=os.getenv("USERAGENT"),
+                domain="js.hcaptcha.com",
+                invisible=1,
             )
+
+            with open("result.json", "w") as f:
+                f.write(json.dumps(result))
+
         except Exception as e:
             return None
 
         else:
+            print("👉 Injetando script...")
             results = page.evaluate(
-                """(token) => {
-        const elh = document.querySelector("textarea[name='h-captcha-response']");
-        if (!elh) return;
-        elh.value = token;
-        elh.setAttribute('value', token); // só para visualização
-        elh.dispatchEvent(new Event('input', { bubbles: true }));
-        elh.dispatchEvent(new Event('change', { bubbles: true }));
-        }""",
-                result["code"],
+                """([token, useragent]) => {
+                    Object.defineProperty(navigator, "userAgent", {
+                      get: () => useragent
+                    });
+
+                    const elh = document.querySelector("textarea[name='h-captcha-response']");
+                    if (!elh) return;
+                    elh.value = token;
+                    elh.setAttribute('value', token); // só para visualização
+                    elh.dispatchEvent(new Event('input', { bubbles: true }));
+                    elh.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    const elg = document.querySelector("textarea[name='g-recaptcha-response']");
+                    if (!elg) return;
+                    elg.value = token;
+                    elg.setAttribute('value', token); // só para visualização
+                    elg.dispatchEvent(new Event('input', { bubbles: true }));
+                    elg.dispatchEvent(new Event('change', { bubbles: true }));
+                }""",
+                [result["code"], result["useragent"]],
             )
 
-        set_iframe_attr(page, "iframe", "data-hcaptcha-response", result["code"])
+            # set_iframe_attr(page, "iframe", "data-hcaptcha-response", result["code"])
 
         page.get_by_role("button", name="Pesquisar Pesquisar").click()
 
