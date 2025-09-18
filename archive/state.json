@@ -1,0 +1,145 @@
+{
+  "cookies": [
+    {
+      "name": "__cf_bm",
+      "value": "XNH1.TIDNECbIvKiJFEhdFYQnTfOwPdXPNnOu4FAlbQ-1756122179-1.0.1.1-.lXNzYKyYp50EfxOE6c6pZdkRI.PjIbdGfVwQqyuXjIftF8eWJGw_3ISO_Y.uTiVbnExcUkz0vwYGOG.qIkVH3AharS.FLXrNx0c.l0hmRo",
+      "domain": ".hcaptcha.com",
+      "path": "/",
+      "expires": 1756123979.306702,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "TS00000000076",
+      "value": "0887342584ab2800f0bb9f9e5a316f4aedce649577262ab5aecd0d06e4906af01b052ae94c98ab853ba573179610c6ad08bf9f6b5809d000aff49bb57e8ba460ad0e82e6b717e732542b8f0355df33f7d1068c588d99b069f4f44d2cda8e61df9d618075d267cb294dc495747905baf6da28551be7f5aba2396bae5478b13c6f94f33a305a0d67a9b87e8f5e4bb6d634f069e347ee9e96995e605e36102d275180d59de85eb4246f2637f93b28de82ce9803eb138cabcaabc21bff8fc096222520e4d5d55459dceb34f17ccddec234854be06c6d3d73af55d6c2c930e0303bdd21e3818f7dae89f36b778e63d46a5fd31431b7c22e91e71ae0275a69f126e9af029902aca8885cb7",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TS01143be6",
+      "value": "0103a0ceaebaefac1b4b4d811cb2e257a53be433c677976ed29e1efbe9be7704830c7eb7f07959f328c97d5fd532a5a25d8ecd1559",
+      "domain": "www.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TSPD_101_DID",
+      "value": "0887342584ab2800f0bb9f9e5a316f4aedce649577262ab5aecd0d06e4906af01b052ae94c98ab853ba573179610c6ad08bf9f6b580638006f6eb5673f2d4f34d8ad546d5337bfc1da6799459498246710a36b68906ec1a7fa1314b959933d4e2dc56a292ecd29a82562693cad23813f",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TSPD_101",
+      "value": "0887342584ab280003e944fb7dd4a7805198d687b6fae07efeabf191a63f04f70b05921e8876a914d9303d5efbcfda2308f9631936051800e041229d42bdf58c9baf9168cb47cb104616cfc797897efb",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "hmt_id",
+      "value": "5a97fa4f-14ff-4d6f-9fb2-3a7ac48adc2b",
+      "domain": "api.hcaptcha.com",
+      "path": "/",
+      "expires": 1758714205.459057,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None",
+      "partitionKey": "https://tse.jus.br",
+      "_crHasCrossSiteAncestor": true
+    },
+    {
+      "name": "TSf273801c073",
+      "value": "0887342584ab28002f8b36469a61777f4f97d9cb690b3014d5a934c6d952cde8764b18c73e2e160b78cc8821bc85ad12088aaebebd02180022876df0f6a04fbfe0a757b7f2e6ad27052c9b3391156a05:088aaebebd0c18008bcdd1949ea86b3ca8838a9770a40fe3bbd3329657fe11d0",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": 1756122339,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sticky",
+      "value": "df8ca1f55965979df64545049bb1d34ad4fd8f48",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TS01683a6d",
+      "value": "0103a0ceae06db32d834ea8154c9ae0e590bcfa37093c64d8a81a18f99ff47da185540b7934f8bc45174fe41ac0f41309e6657d9e6c799be8e1d1c46c71e17c281ef0b4a18",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TSf273801c077",
+      "value": "0887342584ab28008045238cc1a8c9b064b039ef6b23359f3bb8023c88d7b72650b1108990f342bc3b9f0e2ff0cc812508e3030ea4172000cc8bd00036b4668ba5e7ed25e0906aaa0e2db03aa0b8df49db763c46daefa0b7",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TSf273801c029",
+      "value": "0887342584ab28004a4502077428f9ae511d3eb48972895c8644965889549a8c52b4554d749e43012d88003e63ceb9d6",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": 1756122274.275822,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "TS4529b75d027",
+      "value": "0887342584ab2000469acbf5009410a841b7a9e86aaef705c0ee138510bc317b8599d8083daadfdd08dc1074421130000afa897b5ac1d64cab7a2514fb40f427f5a52d1d2dccd8b0a1685076ac5745a2b2d2433b34fcfad51084d0ca0ea84a80",
+      "domain": "consultaunificadapje.tse.jus.br",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://consultaunificadapje.tse.jus.br",
+      "localStorage": [
+        {
+          "name": "TSPD_74",
+          "value": "0887342584ab200094cdcef47d06d7921d411b32d82b14ba0eef869f41f7b030a11334d058ef868e082c5042d308c80088a999c551143727570e7ec8994d424dab06f7d0a60a89f0a8abf1e7daaee214d61a2f68657fe026fa5cb18136f037ba0e18df0054d5f5ca2e13bc4a66ee51c506cfec1713af6640a301d8729b60aa9ec044303e97f047887a37c881d25d2aaf2ef1a27783426eff07903a891c1aa64d72749ddbc8812f1d3b9c6f7eb10016406f64c2ad48b7b4646461c7fca923307f064d746e4edb2eec3adc046dc896c4bef1aa19035f55eb673f9ecc33b58bf75214b4ad0bf26bcd22829119f7e49411702a6665b88be161f4"
+        },
+        {
+          "name": "ng2Idle.main.idling",
+          "value": "false"
+        },
+        {
+          "name": "TS00000000076",
+          "value": "43d3499efa4b6a380168ac4c42025cc7788e198a06b946ab6d0ca6e8ac006efe62"
+        }
+      ]
+    }
+  ]
+}
