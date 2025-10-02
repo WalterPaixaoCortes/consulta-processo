@@ -21,7 +21,7 @@ async function runFlowV3(value) {
     if (s.visibility === "hidden" || s.display === "none" || +s.opacity === 0) return false;
     const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1;
   };
-  const safeClick = (el) => { try { el.scrollIntoView({behavior:"auto", block:"center"}); } catch {} try { el.focus({preventScroll:true}); } catch {}; el.click(); };
+  const safeClick = (el) => { try { el.scrollIntoView({ behavior: "auto", block: "center" }); } catch { } try { el.focus({ preventScroll: true }); } catch { }; el.click(); };
 
   const rowsSelector = "table tbody tr, .mat-mdc-table .mat-mdc-row, .mat-table .mat-row";
   const waitForRows = async (min = 1, timeout = 20000) => {
@@ -42,8 +42,8 @@ async function runFlowV3(value) {
     const rows = Array.from(document.querySelectorAll(rowsSelector));
     if (!rows.length) return "";
     const first = _text(rows[0]) || "";
-    const mid = _text(rows[Math.floor(rows.length/2)]) || "";
-    const last = _text(rows[rows.length-1]) || "";
+    const mid = _text(rows[Math.floor(rows.length / 2)]) || "";
+    const last = _text(rows[rows.length - 1]) || "";
     return [first, mid, last].join(" || ");
   };
 
@@ -62,7 +62,7 @@ async function runFlowV3(value) {
     const rows = Array.from(tbl.querySelectorAll("tbody tr")).map(tr =>
       Array.from(tr.querySelectorAll("th,td")).map(_text)
     );
-    if (!headers.length && rows.length) headers = rows[0].map((_, i) => `Coluna ${i+1}`);
+    if (!headers.length && rows.length) headers = rows[0].map((_, i) => `Coluna ${i + 1}`);
     return { headers, rows };
   };
 
@@ -70,12 +70,12 @@ async function runFlowV3(value) {
     const tbl = root.querySelector(".mat-mdc-table, .mat-table");
     if (!tbl) return null;
     const headerCells = tbl.querySelectorAll(".mat-mdc-header-row .mat-mdc-header-cell, .mat-header-row .mat-header-cell");
-    const rowEls     = tbl.querySelectorAll(".mat-mdc-row, .mat-row");
+    const rowEls = tbl.querySelectorAll(".mat-mdc-row, .mat-row");
     const headers = Array.from(headerCells).map(_text).filter(Boolean);
     const rows = Array.from(rowEls).map(r =>
       Array.from(r.querySelectorAll(".mat-mdc-cell, .mat-cell")).map(_text)
     );
-    return { headers: headers.length ? headers : (rows[0]?.map((_, i)=>`Coluna ${i+1}`) ?? []), rows };
+    return { headers: headers.length ? headers : (rows[0]?.map((_, i) => `Coluna ${i + 1}`) ?? []), rows };
   };
 
   const extractFromVirtualScroll = async (root) => {
@@ -110,7 +110,7 @@ async function runFlowV3(value) {
     const vs = await extractFromVirtualScroll(doc);
     if (vs?.rows?.length) results.push({ kind: "virtual", rows: vs.rows, headers: vs.headers });
     if (!results.length) return null;
-    results.sort((a,b) => (b.rows?.length||0) - (a.rows?.length||0));
+    results.sort((a, b) => (b.rows?.length || 0) - (a.rows?.length || 0));
     const best = results[0];
     best.rows = _uniqRows(best.rows);
     return best;
@@ -127,7 +127,7 @@ async function runFlowV3(value) {
             if (!fdoc) continue;
             const d = await collectBestTableFromDoc(fdoc);
             if (d?.rows?.length) { best = d; break; }
-          } catch {}
+          } catch { }
         }
       }
       if (!best) return { headers: [], rows: [] };
@@ -214,8 +214,8 @@ async function runFlowV3(value) {
           const options = Array.from(panel.querySelectorAll(".mat-option, .mdc-list-item"));
           const getTxt = (el) => (el?.innerText ?? el?.textContent ?? "").replace(/\s+/g, " ").trim();
           const opt100 = options.find(el => /\b100\b/.test(getTxt(el)));
-          const opt50  = options.find(el => /\b50\b/.test(getTxt(el)));
-          const toSel  = opt100 || opt50;
+          const opt50 = options.find(el => /\b50\b/.test(getTxt(el)));
+          const toSel = opt100 || opt50;
           if (toSel) {
             toSel.click();
             await waitForRows(1, 12000);
@@ -317,6 +317,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
     // injeta runFlowV3 e roda
     const valor = job.valor ?? job.value ?? job.result ?? job.data ?? job.text ?? "";
+    const jobid = job.id ?? job.jobId ?? job.job_id ?? ""
     const inj = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: runFlowV3,
@@ -327,7 +328,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (!result || result.error) return;
 
     const payload = { headers: result.headers || [], rows: result.rows || [] };
-    await apiFinish(tab.id, payload);
+    await apiFinish(jobid, payload);
   } catch (e) {
     // silencia erros para não interromper ciclo; pode-se logar se quiser
     console.warn("poll-next error:", e);
