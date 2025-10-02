@@ -1,30 +1,86 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Fluxo: API -> Input -> Pesquisar -> 50 -> Tabela</title>
-    <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 12px; width: 380px; }
-      h1 { font-size: 14px; margin: 0 0 8px 0; }
-      button { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; cursor: pointer; }
-      button:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-      .row { margin-top: 8px; font-size: 12px; }
-      .ok { color: #10b981; display: none; }
-      .err { color: #ef4444; display: none; white-space: pre-wrap; }
-      .muted { color: #6b7280; }
-      code { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; }
-      pre { background: #0b1020; color: #e5e7eb; padding: 8px; border-radius: 8px; max-height: 240px; overflow: auto; font-size: 11px; }
-      .headers { font-weight: 600; margin-top: 6px; }
-    </style>
-  </head>
-  <body>
-    <h1>Fluxo completo</h1>
-    <button id="run">Executar</button>
-    <div class="row muted">POST <code>http://localhost:8000/next</code> → #mat-input-9 → “Pesquisar” → selecionar 50 → coletar tabela (thead/tbody)</div>
-    <div id="ok" class="row ok">Executado ✅</div>
-    <div id="err" class="row err"></div>
-    <div class="row headers" id="headers"></div>
-    <pre id="rows"></pre>
-    <script src="popup.js"></script>
-  </body>
+
+<head>
+  <meta charset="utf-8">
+  <title>Fluxo: API -> Input -> Pesquisar -> 50 -> Tabela</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 12px;
+      width: 380px;
+    }
+
+    h1 {
+      font-size: 14px;
+      margin: 0 0 8px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+    }
+
+    button:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .row {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .ok {
+      color: #10b981;
+      display: none;
+    }
+
+    .err {
+      color: #ef4444;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    code {
+      background: #f3f4f6;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: #0b1020;
+      color: #e5e7eb;
+      padding: 8px;
+      border-radius: 8px;
+      max-height: 240px;
+      overflow: auto;
+      font-size: 11px;
+    }
+
+    .headers {
+      font-weight: 600;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Fluxo completo</h1>
+  <!-- <button id="run">Executar</button> -->
+  <div class="row muted">POST <code>http://localhost:8000/next</code> → #mat-input-9 → “Pesquisar” → selecionar 50 →
+    coletar tabela (thead/tbody)</div>
+  <div id="ok" class="row ok">Executado ✅</div>
+  <div id="err" class="row err"></div>
+  <div class="row headers" id="headers"></div>
+  <pre id="rows"></pre>
+  <script src="popup.js"></script>
+</body>
+
 </html>

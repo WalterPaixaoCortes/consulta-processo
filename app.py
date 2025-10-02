@@ -1,5 +1,5 @@
 # app.py
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 from typing import Optional, Any, Dict
 from enum import Enum
@@ -18,6 +18,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
+
 
 # --------- Configuração do banco ---------
 SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"
@@ -87,6 +88,18 @@ class NextResponse(BaseModel):
     id: str
     text: str
     status: StatusEnum
+
+
+class ClearResponse(BaseModel):
+    deleted: int
+
+
+class FinishRequest(BaseModel):
+    content: Dict[str, Any]
+
+
+class FailRequest(BaseModel):
+    error: str
 
 
 # --------- App ---------
@@ -188,14 +201,6 @@ def next_pending(db: Session = Depends(get_db)):
     return NextResponse(id=record.id, text=record.text, status=record.status)
 
 
-# --- Utilidades opcionais para "concluir" ou "falhar" um job reservado ---
-# Essas rotas não foram pedidas, mas geralmente o worker precisa finalizar o job:
-
-
-class FinishRequest(BaseModel):
-    content: Dict[str, Any]
-
-
 @app.post(
     "/finish/{job_id}", summary="(Opcional) Marca um job como DONE com result_json"
 )
@@ -213,10 +218,6 @@ def finish(job_id: str, payload: FinishRequest, db: Session = Depends(get_db)):
     return {"status": "done"}
 
 
-class FailRequest(BaseModel):
-    error: str
-
-
 @app.post("/fail/{job_id}", summary="(Opcional) Marca um job como ERROR")
 def fail(job_id: str, payload: FailRequest, db: Session = Depends(get_db)):
     record = db.get(Message, job_id)
@@ -232,9 +233,6 @@ def fail(job_id: str, payload: FailRequest, db: Session = Depends(get_db)):
     return {"status": "error", "error": payload.error}
 
 
-# ... (mesmo código anterior acima)
-
-from fastapi import Query
 from typing import List
 
 
@@ -279,3 +277,29 @@ def list_jobs(
 
     items = db.execute(stmt).scalars().all()
     return [JobOut.model_validate(i) for i in items]
+
+
+@app.delete(
+    "/jobs/clear",
+    summary="Remove todos os registros da base ou apenas de um status específico",
+    response_model=ClearResponse,
+    status_code=status.HTTP_200_OK,
+)
+def clear_jobs(
+    db: Session = Depends(get_db),
+    status: Optional[StatusEnum] = Query(
+        default=None, description="Se informado, remove apenas registros deste status"
+    ),
+):
+    """
+    Limpa a tabela messages.
+    - Sem parâmetro -> remove todos os registros.
+    - Com parâmetro status -> remove apenas registros daquele status.
+    Retorna a quantidade de registros excluídos.
+    """
+    query = db.query(Message)
+    if status:
+        query = query.filter(Message.status == status)
+    deleted_count = query.delete(synchronize_session=False)
+    db.commit()
+    return ClearResponse(deleted=deleted_count)

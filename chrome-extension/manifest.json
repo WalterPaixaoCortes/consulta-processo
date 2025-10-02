@@ -1,15 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "Botão Pesquisar + API + Tabela (thead/tbody)",
-  "version": "1.4.1",
-  "description": "POST em localhost:8000/next, preenche #mat-input-9, clica 'Pesquisar', seta mat-select 50 e coleta cabeçalhos (thead) e linhas (tbody).",
-  "permissions": ["scripting", "activeTab"],
-  "host_permissions": ["http://localhost:8000/*", "<all_urls>"],
-  "action": {
-    "default_title": "Executar fluxo completo",
-    "default_popup": "popup.html"
-  },
+  "name": "Tabela Collector (Auto Poll)",
+  "version": "1.3.0",
+  "description": "Coleta tabela (Angular Material ou HTML) com paginação e envia JSON ao backend. Faz polling /next a cada 30s.",
+  "permissions": [
+    "scripting",
+    "tabs",
+    "activeTab",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://consultaunificadapje.tse.jus.br/#/public/inicial/index/*",
+    "http://localhost:8000/*"
+  ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "Tabela Collector"
   }
 }

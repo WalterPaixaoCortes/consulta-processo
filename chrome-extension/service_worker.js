@@ -1,30 +1,12 @@
 
-async function callApi() {
-  const resp = await fetch("http://localhost:8000/next", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ trigger: "extension" })
-  });
-  const status = resp.status;
-  let data = null;
-  try { data = await resp.json(); } catch (_) { data = null; }
-  return { status, data };
-}
+// service_worker.js (Manifest V3)
+let running = false;
 
-async function postFinish(tabId, contentObj) {
-  const url = `http://localhost:8000/finish/${tabId}`;
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: contentObj })
-  });
-  const status = resp.status;
-  let data = null;
-  try { data = await resp.json(); } catch (_) { data = null; }
-  return { status, data };
-}
+// === CONFIG ===
+const BASE_URL = "http://localhost:8000";
+const POLL_INTERVAL_SEC = 30;
 
-// ===================== SELF-CONTAINED FLOW with Smarter Paginator & Change Detection =====================
+// ---- Core flow from your working version (self-contained) ----
 async function runFlowV3(value) {
   const wait = (ms) => new Promise(res => setTimeout(res, ms));
   const _text = (el) => (el?.innerText ?? el?.textContent ?? "").replace(/\s+/g, " ").trim();
@@ -39,7 +21,7 @@ async function runFlowV3(value) {
     if (s.visibility === "hidden" || s.display === "none" || +s.opacity === 0) return false;
     const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1;
   };
-  const safeClick = (el) => { try { el.scrollIntoView({ behavior: "auto", block: "center" }); } catch { } try { el.focus({ preventScroll: true }); } catch { }; el.click(); };
+  const safeClick = (el) => { try { el.scrollIntoView({behavior:"auto", block:"center"}); } catch {} try { el.focus({preventScroll:true}); } catch {}; el.click(); };
 
   const rowsSelector = "table tbody tr, .mat-mdc-table .mat-mdc-row, .mat-table .mat-row";
   const waitForRows = async (min = 1, timeout = 20000) => {
@@ -56,13 +38,12 @@ async function runFlowV3(value) {
     return 0;
   };
 
-  // Snapshot de conteúdo para detectar mudança de página mesmo quando o número de linhas é constante
   const getRowSnapshot = () => {
     const rows = Array.from(document.querySelectorAll(rowsSelector));
     if (!rows.length) return "";
     const first = _text(rows[0]) || "";
-    const mid = _text(rows[Math.floor(rows.length / 2)]) || "";
-    const last = _text(rows[rows.length - 1]) || "";
+    const mid = _text(rows[Math.floor(rows.length/2)]) || "";
+    const last = _text(rows[rows.length-1]) || "";
     return [first, mid, last].join(" || ");
   };
 
@@ -71,7 +52,7 @@ async function runFlowV3(value) {
     while (performance.now() - start < timeout) {
       const snap = getRowSnapshot();
       if (snap && snap !== prevSnap) return true;
-      await wait(150);
+      await new Promise(r => setTimeout(r, 150));
     }
     return false;
   };
@@ -81,7 +62,7 @@ async function runFlowV3(value) {
     const rows = Array.from(tbl.querySelectorAll("tbody tr")).map(tr =>
       Array.from(tr.querySelectorAll("th,td")).map(_text)
     );
-    if (!headers.length && rows.length) headers = rows[0].map((_, i) => `Coluna ${i + 1}`);
+    if (!headers.length && rows.length) headers = rows[0].map((_, i) => `Coluna ${i+1}`);
     return { headers, rows };
   };
 
@@ -89,12 +70,12 @@ async function runFlowV3(value) {
     const tbl = root.querySelector(".mat-mdc-table, .mat-table");
     if (!tbl) return null;
     const headerCells = tbl.querySelectorAll(".mat-mdc-header-row .mat-mdc-header-cell, .mat-header-row .mat-header-cell");
-    const rowEls = tbl.querySelectorAll(".mat-mdc-row, .mat-row");
+    const rowEls     = tbl.querySelectorAll(".mat-mdc-row, .mat-row");
     const headers = Array.from(headerCells).map(_text).filter(Boolean);
     const rows = Array.from(rowEls).map(r =>
       Array.from(r.querySelectorAll(".mat-mdc-cell, .mat-cell")).map(_text)
     );
-    return { headers: headers.length ? headers : (rows[0]?.map((_, i) => `Coluna ${i + 1}`) ?? []), rows };
+    return { headers: headers.length ? headers : (rows[0]?.map((_, i)=>`Coluna ${i+1}`) ?? []), rows };
   };
 
   const extractFromVirtualScroll = async (root) => {
@@ -103,11 +84,11 @@ async function runFlowV3(value) {
     const content = viewport.querySelector(".cdk-virtual-scroll-content-wrapper") || viewport;
     let lastH = -1, guard = 0;
     viewport.scrollTop = 0;
-    await wait(50);
+    await new Promise(r => setTimeout(r, 50));
     while (content.scrollHeight !== lastH && guard < 300) {
       lastH = content.scrollHeight;
       viewport.scrollTop = lastH;
-      await wait(80);
+      await new Promise(r => setTimeout(r, 80));
       guard++;
     }
     const mat = extractFromMatTable(viewport) || extractFromMatTable(root);
@@ -129,7 +110,7 @@ async function runFlowV3(value) {
     const vs = await extractFromVirtualScroll(doc);
     if (vs?.rows?.length) results.push({ kind: "virtual", rows: vs.rows, headers: vs.headers });
     if (!results.length) return null;
-    results.sort((a, b) => (b.rows?.length || 0) - (a.rows?.length || 0));
+    results.sort((a,b) => (b.rows?.length||0) - (a.rows?.length||0));
     const best = results[0];
     best.rows = _uniqRows(best.rows);
     return best;
@@ -146,7 +127,7 @@ async function runFlowV3(value) {
             if (!fdoc) continue;
             const d = await collectBestTableFromDoc(fdoc);
             if (d?.rows?.length) { best = d; break; }
-          } catch { }
+          } catch {}
         }
       }
       if (!best) return { headers: [], rows: [] };
@@ -156,13 +137,11 @@ async function runFlowV3(value) {
     }
   };
 
-  // ---- paginator helpers ----
   const getPaginator = () => document.querySelector("mat-paginator, .mat-mdc-paginator");
   const parseRange = (pag) => {
     const lbl = pag?.querySelector(".mat-mdc-paginator-range-label, .mat-paginator-range-label");
     if (!lbl) return null;
-    const t = _text(lbl);
-    // padrões: "1 – 9 de 32" | "1 – 9 of 32"
+    const t = (lbl.innerText || lbl.textContent || "").replace(/\s+/g, " ").trim();
     const m = t.match(/(\d+)\s*[–-]\s*(\d+)\s*(?:de|of)\s*(\d+)/i);
     if (m) return { start: +m[1], end: +m[2], total: +m[3] };
     const m2 = t.match(/(\d+)\s*(?:de|of)\s*(\d+)/i);
@@ -180,7 +159,11 @@ async function runFlowV3(value) {
       ".mat-mdc-icon-button[aria-label*=Próxima]",
       ".mat-icon-button[aria-label*=Next]",
     ].join(",");
-    return Array.from(pag.querySelectorAll(selectors)).filter(isVisible);
+    return Array.from(pag.querySelectorAll(selectors)).filter(el => {
+      const s = getComputedStyle(el);
+      if (s.visibility === "hidden" || s.display === "none" || +s.opacity === 0) return false;
+      const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1;
+    });
   };
   const isDisabledBtn = (btn) => {
     return !!(btn.disabled || btn.getAttribute("disabled") === "true" ||
@@ -195,83 +178,55 @@ async function runFlowV3(value) {
     if (isDisabledBtn(btn)) return false;
 
     const prevSnap = getRowSnapshot();
-    safeClick(btn);
+    btn.click();
 
-    // aguarda mudança de conteúdo (não apenas contagem)
     const changed = await waitForPageChange(prevSnap, 12000);
     if (!changed) {
-      // fallback: espera por linhas (útil em primeira mudança)
       await waitForRows(1, 8000);
     }
     return true;
   };
 
-  // ---- Infinite scroll fallback (sem paginator) ----
   const tryInfiniteScroll = async () => {
     const docEl = document.scrollingElement || document.documentElement || document.body;
     let prevH = -1, guard = 0;
     while (docEl.scrollHeight !== prevH && guard < 100) {
       prevH = docEl.scrollHeight;
       docEl.scrollTo(0, docEl.scrollHeight);
-      await wait(200);
+      await new Promise(r => setTimeout(r, 200));
       guard++;
     }
   };
 
-  // ---------- main flow ----------
   try {
-    // 1) Preencher input se existir
-    const input = document.querySelector("#mat-input-9");
-    if (input) {
-      const proto = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
-      if (proto?.set) proto.set.call(input, String(value ?? ""));
-      else input.value = String(value ?? "");
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    // 2) Clicar em "Pesquisar/Buscar/Search"
-    const CANDS = "button,[role=button],input[type=button],input[type=submit],input[type=image]";
-    const matchPesquisar = (el) => {
-      const a = (el.getAttribute("aria-label") || "").toLowerCase();
-      const t = (el.innerText || "").toLowerCase();
-      const v = (el.value || "").toLowerCase();
-      const title = (el.getAttribute("title") || "").toLowerCase();
-      return [a, t, v, title].some(x => x.includes("pesquisar") || x.includes("buscar") || x.includes("search"));
-    };
-    let searchBtn = null;
-    for (const el of document.querySelectorAll(CANDS)) {
-      if (isVisible(el) && matchPesquisar(el)) { searchBtn = el; break; }
-    }
-    if (searchBtn) safeClick(searchBtn);
-
-    // 3) Espera linhas iniciais
+    // 1) Espera linhas iniciais
     await waitForRows(1, 30000);
 
-    // 4) Tenta page size maior (100) antes de iterar
+    // 2) Tenta aumentar page size
     let matSelect = document.querySelector("mat-select, .mat-mdc-select, .mat-select");
     if (matSelect) {
       const trigger = matSelect.querySelector(".mat-mdc-select-trigger, .mat-select-trigger") || matSelect;
       if (trigger) {
-        safeClick(trigger);
-        await wait(300);
+        trigger.click();
+        await new Promise(r => setTimeout(r, 300));
         const panel = document.querySelector(".cdk-overlay-container .mat-mdc-select-panel, .cdk-overlay-container .mat-select-panel");
         if (panel) {
           const options = Array.from(panel.querySelectorAll(".mat-option, .mdc-list-item"));
-          const opt100 = options.find(el => /\b100\b/.test((_text(el))));
-          const opt50 = options.find(el => /\b50\b/.test((_text(el))));
-          const toSel = opt100 || opt50;
+          const getTxt = (el) => (el?.innerText ?? el?.textContent ?? "").replace(/\s+/g, " ").trim();
+          const opt100 = options.find(el => /\b100\b/.test(getTxt(el)));
+          const opt50  = options.find(el => /\b50\b/.test(getTxt(el)));
+          const toSel  = opt100 || opt50;
           if (toSel) {
-            safeClick(toSel);
+            toSel.click();
             await waitForRows(1, 12000);
           } else {
-            document.body.click(); // fecha overlay
+            document.body.click();
           }
         }
       }
     }
 
-    // 5) Coleta páginas
+    // 3) Coleta e pagina
     let aggregate = { headers: [], rows: [] };
     let first = await collectTableFromCard();
     if (first?.headers?.length) aggregate.headers = first.headers;
@@ -279,31 +234,24 @@ async function runFlowV3(value) {
 
     const pag = getPaginator();
     if (pag) {
-      // se range label indicar total, iterar até alcançar
-      const seenPages = new Set();
+      const seen = new Set();
       let guard = 0;
-      // snapshot loop to avoid duplicates across stuck buttons
       while (guard < 100) {
         guard++;
         const range = parseRange(pag);
-        const beforeCount = aggregate.rows.length;
-        const pageSnap = getRowSnapshot();
-        if (range && range.total && beforeCount >= range.total) break;
+        const before = aggregate.rows.length;
         const moved = await clickNext(pag);
         if (!moved) break;
-
-        // após mudar, coleta
         const pageData = await collectTableFromCard();
-        if (pageData?.rows?.length) {
-          aggregate.rows.push(...pageData.rows);
-        }
-        const afterSnap = getRowSnapshot();
-        const key = afterSnap || pageSnap;
-        if (seenPages.has(key)) break;
-        seenPages.add(key);
+        if (pageData?.rows?.length) aggregate.rows.push(...pageData.rows);
+        const snap = document.querySelector(".mat-mdc-table, .mat-table") ?
+          document.querySelector(".mat-mdc-table, .mat-table").innerText.slice(0, 200) : "";
+        if (seen.has(snap)) break;
+        seen.add(snap);
+        if (range && range.total && aggregate.rows.length >= range.total) break;
+        if (aggregate.rows.length === before) break;
       }
     } else {
-      // sem paginator — tenta infinite scroll total e coleta novamente
       await tryInfiniteScroll();
       const all = await collectTableFromCard();
       if (all?.rows?.length) {
@@ -319,47 +267,71 @@ async function runFlowV3(value) {
   }
 }
 
-// ===================== POPUP HANDLER =====================
-document.getElementById("run").addEventListener("click", async () => {
-  const ok = document.getElementById("ok");
-  const err = document.getElementById("err");
-  ok.style.display = "none";
-  err.style.display = "none";
-
+// ---- API calls ----
+async function apiNext() {
+  const resp = await fetch(`${BASE_URL}/next`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ trigger: "extension" })
+  });
+  if (resp.status === 204) return null; // sem job
+  if (resp.status !== 200) return null;
   try {
-    const { status, data } = await callApi();
-    if (status === 200 && data) {
-      const valor = data.valor ?? data.value ?? data.result ?? data.data ?? data.text ?? "";
-      const jobid = data.id ?? data.jobId ?? data.job_id ?? null;
+    const data = await resp.json();
+    return data;
+  } catch {
+    return null;
+  }
+}
 
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) throw new Error("Aba ativa não encontrada.");
+async function apiFinish(tabId, payload) {
+  const resp = await fetch(`${BASE_URL}/finish/${tabId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: payload })
+  });
+  return resp.ok;
+}
 
-      const inj = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: runFlowV3,
-        args: [valor],
-        world: "MAIN"
-      });
+// ---- Poll loop (alarms) ----
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.alarms.create("poll-next", { periodInMinutes: POLL_INTERVAL_SEC / 60 });
+});
 
-      const result = inj?.[0]?.result;
-      if (!result) throw new Error("Fluxo não retornou dados.");
-      if (result.error) throw new Error(result.error);
+chrome.runtime.onStartup.addListener(() => {
+  chrome.alarms.create("poll-next", { periodInMinutes: POLL_INTERVAL_SEC / 60 });
+});
 
-      const payload = { headers: result.headers || [], rows: result.rows || [] };
-      const fin = await postFinish(jobid, payload);
-      if (fin.status >= 200 && fin.status < 300) {
-        ok.style.display = "block";
-        ok.textContent = "OK: enviados " + (payload.rows?.length || 0) + " registros para finish/" + tab.id;
-        setTimeout(() => ok.style.display = "none", 3000);
-      } else {
-        throw new Error("Falha no finish/" + tab.id + " (status " + fin.status + ")");
-      }
-    } else {
-      throw new Error("Status " + status + " ou resposta inválida da API.");
-    }
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name !== "poll-next") return;
+  if (running) return; // evita sobreposição
+  running = true;
+  try {
+    const job = await apiNext();
+    if (!job) return; // sem job, apenas espera próxima execução
+
+    // pega a aba ativa
+    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const tab = tabs && tabs[0];
+    if (!tab?.id) return;
+
+    // injeta runFlowV3 e roda
+    const valor = job.valor ?? job.value ?? job.result ?? job.data ?? job.text ?? "";
+    const inj = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: runFlowV3,
+      args: [valor],
+      world: "MAIN"
+    });
+    const result = inj?.[0]?.result;
+    if (!result || result.error) return;
+
+    const payload = { headers: result.headers || [], rows: result.rows || [] };
+    await apiFinish(tab.id, payload);
   } catch (e) {
-    err.textContent = "Erro: " + (e?.message || e);
-    err.style.display = "block";
+    // silencia erros para não interromper ciclo; pode-se logar se quiser
+    console.warn("poll-next error:", e);
+  } finally {
+    running = false;
   }
 });
