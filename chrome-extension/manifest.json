@@ -1,22 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "Tabela Collector (Auto Poll)",
-  "version": "1.3.0",
-  "description": "Coleta tabela (Angular Material ou HTML) com paginação e envia JSON ao backend. Faz polling /next a cada 30s.",
+  "name": "Job Runner Extension",
+  "description": "Consome jobs de uma API, executa busca na página e envia os resultados.",
+  "version": "1.1.0",
   "permissions": [
     "scripting",
     "tabs",
-    "activeTab",
     "alarms"
   ],
   "host_permissions": [
-    "https://consultaunificadapje.tse.jus.br/#/public/inicial/index/*",
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "<all_urls>"
   ],
   "background": {
-    "service_worker": "service_worker.js"
+    "service_worker": "service_worker.js",
+    "type": "module"
   },
   "action": {
-    "default_title": "Tabela Collector"
+    "default_title": "Job Runner"
   }
 }
